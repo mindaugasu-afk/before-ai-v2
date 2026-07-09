@@ -192,8 +192,18 @@ button {
   padding: 8px;
 }
 
+.connection-status {
+  background: #ffffff;
+  border: 1px inset #aca899;
+  color: #1746a2;
+  font-weight: 700;
+  margin-left: auto;
+  padding: 5px 8px;
+}
+
 .xp-toolbar button,
 .button-row button,
+.xp-link-button,
 .xp-form button,
 .start-menu button {
   background: linear-gradient(180deg, #ffffff, #ece9d8);
@@ -206,10 +216,12 @@ button {
   min-height: 28px;
   min-width: 78px;
   padding: 4px 12px;
+  text-decoration: none;
 }
 
 .xp-toolbar button:active,
 .button-row button:active,
+.xp-link-button:active,
 .xp-form button:active,
 .start-menu button:active {
   box-shadow:
@@ -447,6 +459,37 @@ button {
   padding: 4px 6px;
 }
 
+.xp-form button:disabled {
+  color: #777777;
+  cursor: wait;
+}
+
+.selected-rsvp-event,
+.rsvp-status {
+  background: #ffffff;
+  border: 1px inset #aca899;
+  padding: 8px;
+}
+
+.selected-rsvp-event {
+  color: #0b3d91;
+  font-weight: 700;
+}
+
+.rsvp-status.pending {
+  color: #1746a2;
+}
+
+.rsvp-status.success {
+  background: #e4ffd6;
+  color: #176b17;
+}
+
+.rsvp-status.error {
+  background: #ffe1d6;
+  color: #9b1d0d;
+}
+
 .xp-popup {
   background: #fff7bd;
   border: 1px solid #6f5b00;
@@ -610,6 +653,10 @@ button {
 
   .xp-taskbar {
     gap: 4px;
+  }
+
+  .connection-status {
+    margin-left: 0;
   }
 
   .task-button {

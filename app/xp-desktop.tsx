@@ -1,23 +1,92 @@
 "use client";
 
-import { useState } from "react";
-import type { StoryEvent } from "./page";
+import { type FormEvent, useState } from "react";
+import type { EventsSource, StoryEvent } from "./events-data";
 
 type XpDesktopProps = {
   events: StoryEvent[];
+  eventsSource: EventsSource;
 };
 
-export function XpDesktop({ events }: XpDesktopProps) {
+type RsvpStatus = {
+  tone: "idle" | "pending" | "success" | "error";
+  message: string;
+};
+
+export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
   const [selectedEvent, setSelectedEvent] = useState<StoryEvent>(events[0]);
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(true);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [favoriteTool, setFavoriteTool] = useState("Borland");
+  const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>({
+    tone: "idle",
+    message: "",
+  });
 
   const openEvent = (event: StoryEvent) => {
     setSelectedEvent(event);
     setIsDetailsOpen(true);
     setIsRsvpOpen(false);
+  };
+
+  const openRsvp = (event: StoryEvent = selectedEvent) => {
+    setSelectedEvent(event);
+    setRsvpStatus({ tone: "idle", message: "" });
+    setIsRsvpOpen(true);
+  };
+
+  const submitRsvp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!fullName.trim() || !email.trim()) {
+      setRsvpStatus({
+        tone: "error",
+        message: "Type your name and email before finishing the wizard.",
+      });
+      return;
+    }
+
+    setRsvpStatus({
+      tone: "pending",
+      message: "Dialing Wix Events...",
+    });
+
+    try {
+      const response = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId: selectedEvent.id,
+          fullName,
+          email,
+          favoriteTool,
+        }),
+      });
+      const result = (await response.json()) as { message?: string; error?: string };
+
+      if (!response.ok) {
+        throw new Error(result.error || "RSVP failed.");
+      }
+
+      setRsvpStatus({
+        tone: "success",
+        message: result.message || "RSVP saved.",
+      });
+    } catch (error) {
+      setRsvpStatus({
+        tone: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Wix Events could not accept this RSVP yet.",
+      });
+    }
   };
 
   return (
@@ -52,8 +121,11 @@ export function XpDesktop({ events }: XpDesktopProps) {
         </div>
         <div className="xp-toolbar">
           <button onClick={() => setIsHelpOpen(true)}>About</button>
-          <button onClick={() => setIsRsvpOpen(true)}>RSVP Wizard</button>
+          <button onClick={() => openRsvp()}>RSVP Wizard</button>
           <button onClick={() => setIsStartOpen((value) => !value)}>Start Menu</button>
+          <span className="connection-status">
+            Wix Events: {eventsSource === "wix" ? "live" : "demo"}
+          </span>
         </div>
         <div className="xp-window-body explorer-layout">
           <aside className="folder-pane">
@@ -85,7 +157,7 @@ export function XpDesktop({ events }: XpDesktopProps) {
                   </dl>
                   <div className="button-row">
                     <button onClick={() => openEvent(event)}>Open</button>
-                    <button onClick={() => setIsRsvpOpen(true)}>RSVP</button>
+                    <button onClick={() => openRsvp(event)}>RSVP</button>
                   </div>
                 </div>
               </article>
@@ -118,7 +190,12 @@ export function XpDesktop({ events }: XpDesktopProps) {
                 <span>{selectedEvent.venue}</span>
               </div>
               <div className="button-row right">
-                <button onClick={() => setIsRsvpOpen(true)}>Run RSVP Wizard</button>
+                <button onClick={() => openRsvp()}>Run RSVP Wizard</button>
+                {selectedEvent.eventPageUrl ? (
+                  <a className="xp-link-button" href={selectedEvent.eventPageUrl}>
+                    Wix Event Page
+                  </a>
+                ) : null}
                 <button onClick={() => setIsDetailsOpen(false)}>OK</button>
               </div>
             </div>
@@ -139,29 +216,51 @@ export function XpDesktop({ events }: XpDesktopProps) {
           <div className="xp-window-body wizard-body">
             <div className="wizard-sidebar">
               <span>✓</span>
-              <p>Step 1 of 3</p>
+              <p>{eventsSource === "wix" ? "Wix RSVP" : "Demo RSVP"}</p>
             </div>
-            <form className="xp-form">
+            <form className="xp-form" onSubmit={submitRsvp}>
               <h2>Reserve a chair and a story</h2>
+              <p className="selected-rsvp-event">{selectedEvent.title}</p>
               <label>
                 Your name
-                <input placeholder="Ada Lovelace" />
+                <input
+                  autoComplete="name"
+                  onChange={(event) => setFullName(event.target.value)}
+                  placeholder="Ada Lovelace"
+                  value={fullName}
+                />
+              </label>
+              <label>
+                Email
+                <input
+                  autoComplete="email"
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="ada@example.com"
+                  type="email"
+                  value={email}
+                />
               </label>
               <label>
                 Favorite old tool
-                <select defaultValue="Borland">
+                <select
+                  onChange={(event) => setFavoriteTool(event.target.value)}
+                  value={favoriteTool}
+                >
                   <option>Borland</option>
                   <option>Visual Basic 6</option>
                   <option>Notepad</option>
                   <option>Turbo Pascal</option>
                 </select>
               </label>
+              {rsvpStatus.message ? (
+                <p className={`rsvp-status ${rsvpStatus.tone}`}>{rsvpStatus.message}</p>
+              ) : null}
               <div className="button-row right">
                 <button type="button" onClick={() => setIsRsvpOpen(false)}>
                   Cancel
                 </button>
-                <button type="button" onClick={() => setIsRsvpOpen(false)}>
-                  Finish
+                <button type="submit" disabled={rsvpStatus.tone === "pending"}>
+                  {rsvpStatus.tone === "pending" ? "Sending..." : "Finish"}
                 </button>
               </div>
             </form>
@@ -188,7 +287,7 @@ export function XpDesktop({ events }: XpDesktopProps) {
         <section className="start-menu" aria-label="Start menu">
           <div className="start-user">👴 Code Before AI</div>
           <button onClick={() => openEvent(events[0])}>Recent Story</button>
-          <button onClick={() => setIsRsvpOpen(true)}>RSVP Wizard</button>
+          <button onClick={() => openRsvp()}>RSVP Wizard</button>
           <button onClick={() => setIsHelpOpen(true)}>Help and Support</button>
           <button onClick={() => setIsStartOpen(false)}>Log Off</button>
         </section>

@@ -1,5 +1,5 @@
 {
-  "name": "site-creator-vinext-starter",
+  "name": "before-ai-v2",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -13,6 +13,8 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@wix/events": "^1.0.803",
+    "@wix/sdk": "^1.21.13",
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
     "react": "19.2.6",
