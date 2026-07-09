@@ -382,6 +382,169 @@
         padding: 9px;
       }
 
+      .loading-window {
+        left: 50%;
+        max-width: min(520px, calc(100vw - 28px));
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 520px;
+        z-index: 18;
+      }
+
+      .loading-window.is-hidden {
+        display: none;
+      }
+
+      .transfer-body {
+        display: grid;
+        gap: 14px;
+      }
+
+      .transfer-copy {
+        display: grid;
+        gap: 5px;
+      }
+
+      .transfer-copy h2 {
+        color: #0b3d91;
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .transfer-copy p {
+        line-height: 1.35;
+        margin: 0;
+      }
+
+      .transfer-animation {
+        align-items: center;
+        background: linear-gradient(180deg, #fff, #f3f1e8);
+        border: 1px inset #aca899;
+        display: grid;
+        grid-template-columns: 78px minmax(0, 1fr) 78px;
+        min-height: 96px;
+        overflow: hidden;
+        padding: 13px;
+        position: relative;
+      }
+
+      .transfer-folder {
+        align-items: center;
+        color: #0b3d91;
+        display: grid;
+        font-size: 42px;
+        justify-items: center;
+        line-height: 1;
+        position: relative;
+        z-index: 2;
+      }
+
+      .transfer-folder small {
+        color: #333;
+        font-size: 11px;
+        line-height: 1.1;
+        margin-top: 4px;
+        text-align: center;
+      }
+
+      .paper-lane {
+        height: 70px;
+        position: relative;
+      }
+
+      .flying-paper {
+        animation: fly-paper 1.45s linear infinite;
+        background: #fff;
+        border: 1px solid #245edb;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        height: 30px;
+        left: -18px;
+        position: absolute;
+        top: 18px;
+        width: 24px;
+      }
+
+      .flying-paper::before {
+        border-left: 8px solid transparent;
+        border-top: 8px solid #cfe0ff;
+        content: "";
+        height: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 0;
+      }
+
+      .flying-paper:nth-child(2) {
+        animation-delay: 0.36s;
+        top: 6px;
+      }
+
+      .flying-paper:nth-child(3) {
+        animation-delay: 0.72s;
+        top: 32px;
+      }
+
+      .flying-paper:nth-child(4) {
+        animation-delay: 1.08s;
+        top: 20px;
+      }
+
+      .progress-shell {
+        background: #fff;
+        border: 2px inset #d4d0c8;
+        height: 22px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        animation: xp-progress 1s steps(18) infinite;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #245edb 0 10px,
+            #6fa4ff 10px 18px,
+            transparent 18px 24px
+          );
+        height: 100%;
+        width: 180%;
+      }
+
+      .loading-status {
+        background: #fff;
+        border: 1px inset #aca899;
+        color: #1746a2;
+        font-weight: 700;
+        padding: 7px 8px;
+      }
+
+      @keyframes fly-paper {
+        0% {
+          opacity: 0;
+          transform: translateX(0) translateY(8px) rotate(-8deg);
+        }
+
+        12%,
+        72% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateX(250px) translateY(-6px) rotate(12deg);
+        }
+      }
+
+      @keyframes xp-progress {
+        from {
+          transform: translateX(-80px);
+        }
+
+        to {
+          transform: translateX(0);
+        }
+      }
+
       .rsvp-window {
         display: none;
         left: 50%;
@@ -570,6 +733,22 @@
           top: auto;
         }
 
+        .loading-window {
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: auto;
+        }
+
+        .transfer-animation {
+          grid-template-columns: 58px minmax(0, 1fr) 58px;
+          padding: 10px;
+        }
+
+        .transfer-folder {
+          font-size: 32px;
+        }
+
         .rsvp-window {
           bottom: 58px;
           left: 12px;
@@ -622,6 +801,31 @@
             <div class="folder">📁 Internet Lore</div>
           </aside>
           <section class="event-grid" aria-label="Upcoming events" id="event-grid"></section>
+        </div>
+      </section>
+
+      <section class="xp-window floating-window loading-window" aria-live="polite" id="loading-window">
+        <div class="xp-titlebar">
+          <span>Copying Event Files</span>
+          <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
+        </div>
+        <div class="xp-window-body transfer-body">
+          <div class="transfer-copy">
+            <h2>Downloading stories from Wix Events...</h2>
+            <p>Please wait while Setup Wizard copies the latest event files to your desktop.</p>
+          </div>
+          <div class="transfer-animation" aria-hidden="true">
+            <div class="transfer-folder">📁<small>Wix Events</small></div>
+            <div class="paper-lane">
+              <span class="flying-paper"></span>
+              <span class="flying-paper"></span>
+              <span class="flying-paper"></span>
+              <span class="flying-paper"></span>
+            </div>
+            <div class="transfer-folder">💾<small>XP Site</small></div>
+          </div>
+          <div class="progress-shell" aria-hidden="true"><div class="progress-bar"></div></div>
+          <div class="loading-status" id="loading-status">Contacting Wix Events...</div>
         </div>
       </section>
 
@@ -717,6 +921,8 @@
 
       const grid = document.querySelector("#event-grid");
       const connectionStatus = document.querySelector("#connection-status");
+      const loadingWindow = document.querySelector("#loading-window");
+      const loadingStatus = document.querySelector("#loading-status");
       const detailsWindow = document.querySelector("#details-window");
       const detailsTitle = document.querySelector("#details-title");
       const detailsIcon = document.querySelector("#details-icon");
@@ -832,20 +1038,30 @@
 
           if (!events.length) {
             connectionStatus.textContent = "Wix Events: no RSVP events";
+            loadingStatus.textContent = "No event files found.";
             grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">No files</p><h2>No upcoming RSVP events yet</h2><p>Create RSVP events in Wix and refresh this page.</p></div></article>`;
             detailsWindow.style.display = "none";
+            window.setTimeout(finishLoading, 900);
             return;
           }
 
           connectionStatus.textContent = "Wix Events: live";
+          loadingStatus.textContent = "Opening event explorer...";
           renderEvents();
           updateDesktopIcons();
           openEvent(0);
+          finishLoading();
         } catch (error) {
           console.error("Failed to load Wix Events", error);
           connectionStatus.textContent = "Wix Events: offline";
+          loadingStatus.textContent = "Copy failed. Showing recovery message.";
           grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">Connection error</p><h2>Could not load events</h2><p>Refresh the page after the Wix Events app is ready.</p></div></article>`;
+          window.setTimeout(finishLoading, 1200);
         }
+      }
+
+      function finishLoading() {
+        loadingWindow.classList.add("is-hidden");
       }
 
       function updateDesktopIcons() {
