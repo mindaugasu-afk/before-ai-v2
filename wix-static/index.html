@@ -38,6 +38,7 @@
       }
 
       button,
+      input,
       a {
         font: inherit;
       }
@@ -381,6 +382,95 @@
         padding: 9px;
       }
 
+      .rsvp-window {
+        display: none;
+        left: 50%;
+        max-width: min(620px, calc(100vw - 28px));
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 620px;
+      }
+
+      .wizard-body {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 160px minmax(0, 1fr);
+        min-height: 310px;
+        padding: 0;
+      }
+
+      .wizard-sidebar {
+        background:
+          radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.78), transparent 26%),
+          linear-gradient(180deg, #245edb, #163f8f);
+        color: #fff;
+        display: grid;
+        gap: 10px;
+        place-content: center;
+        text-align: center;
+      }
+
+      .wizard-sidebar span {
+        font-size: 58px;
+      }
+
+      .xp-form {
+        display: grid;
+        gap: 13px;
+        padding: 18px;
+      }
+
+      .xp-form label {
+        display: grid;
+        font-weight: 700;
+        gap: 5px;
+      }
+
+      .xp-form input {
+        background: #fff;
+        border: 2px inset #d4d0c8;
+        min-height: 30px;
+        padding: 4px 6px;
+      }
+
+      .xp-form button:disabled {
+        color: #777;
+        cursor: wait;
+      }
+
+      .selected-rsvp-event,
+      .rsvp-status {
+        background: #fff;
+        border: 1px inset #aca899;
+        padding: 8px;
+      }
+
+      .selected-rsvp-event {
+        color: #0b3d91;
+        font-weight: 700;
+      }
+
+      .rsvp-status {
+        display: none;
+      }
+
+      .rsvp-status.pending {
+        color: #1746a2;
+        display: block;
+      }
+
+      .rsvp-status.success {
+        background: #e4ffd6;
+        color: #176b17;
+        display: block;
+      }
+
+      .rsvp-status.error {
+        background: #ffe1d6;
+        color: #9b1d0d;
+        display: block;
+      }
+
       .xp-popup {
         background: #fff7bd;
         border: 1px solid #6f5b00;
@@ -468,7 +558,8 @@
         }
 
         .explorer-layout,
-        .details-window .xp-window-body {
+        .details-window .xp-window-body,
+        .wizard-body {
           grid-template-columns: 1fr;
         }
 
@@ -477,6 +568,18 @@
           left: 12px;
           right: 12px;
           top: auto;
+        }
+
+        .rsvp-window {
+          bottom: 58px;
+          left: 12px;
+          top: auto;
+          transform: none;
+          width: auto;
+        }
+
+        .wizard-sidebar {
+          min-height: 110px;
         }
 
         .connection-status {
@@ -506,9 +609,9 @@
           <span>File</span><span>Events</span><span>Stories</span><span>Help</span>
         </div>
         <div class="xp-toolbar">
-          <a class="xp-link-button" href="https://mindaugasu.wixsite.com/my-site-178/event-details/how-we-learned-to-code-before-ai-epidemic">Featured RSVP</a>
+          <button class="xp-button" id="featured-rsvp">Featured RSVP</button>
           <button class="xp-button" data-event-index="0">Open First Story</button>
-          <span class="connection-status">Wix Events: live links</span>
+          <span class="connection-status" id="connection-status">Wix Events: loading</span>
         </div>
         <div class="xp-window-body explorer-layout">
           <aside class="folder-pane">
@@ -541,10 +644,46 @@
               <span id="details-venue"></span>
             </div>
             <div class="button-row right">
-              <a class="xp-link-button" id="details-rsvp" href="#">RSVP in Wix Events</a>
+              <button class="xp-button" id="details-rsvp" type="button">Run RSVP Wizard</button>
               <button class="xp-button" type="button" id="details-ok">OK</button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="xp-window floating-window rsvp-window" aria-label="RSVP wizard" id="rsvp-window">
+        <div class="xp-titlebar">
+          <span>RSVP Wizard</span>
+          <div class="window-actions">
+            <button type="button" id="close-rsvp" aria-label="Close RSVP wizard">×</button>
+          </div>
+        </div>
+        <div class="xp-window-body wizard-body">
+          <div class="wizard-sidebar">
+            <span>✓</span>
+            <p>Wix RSVP</p>
+          </div>
+          <form class="xp-form" id="rsvp-form">
+            <h2>Reserve a chair and a story</h2>
+            <p class="selected-rsvp-event" id="selected-rsvp-event">Loading events...</p>
+            <label>
+              First name
+              <input autocomplete="given-name" id="first-name" placeholder="Ada" required />
+            </label>
+            <label>
+              Last name
+              <input autocomplete="family-name" id="last-name" placeholder="Lovelace" required />
+            </label>
+            <label>
+              Email
+              <input autocomplete="email" id="email" placeholder="ada@example.com" required type="email" />
+            </label>
+            <p class="rsvp-status" id="rsvp-status"></p>
+            <div class="button-row right">
+              <button class="xp-button" type="button" id="cancel-rsvp">Cancel</button>
+              <button class="xp-button" id="submit-rsvp" type="submit">Finish</button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -552,7 +691,7 @@
         <div class="popup-title">
           <strong>Windows XP vibe enabled</strong>
         </div>
-        <p>Pick an event, then RSVP through the real Wix Events page. No server runtime required.</p>
+        <p>Pick an event, then RSVP here. The form talks to Wix Events as a site visitor.</p>
       </aside>
 
       <footer class="xp-taskbar">
@@ -563,44 +702,21 @@
       </footer>
     </main>
 
-    <script>
-      const events = [
-        {
-          title: "How we learned to code before AI epidemic",
-          date: "23 July 2026",
-          time: "19:00",
-          venue: "Location is TBD",
-          icon: "💾",
-          status: "open rsvp",
-          summary: "Books and other learning ways to help you improve without using AI",
-          story: "Books and other learning ways to help you improve without using AI",
-          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/how-we-learned-to-code-before-ai-epidemic",
-        },
-        {
-          title: "Anti-AI-Anonymous",
-          date: "23 July 2026",
-          time: "19:00",
-          venue: "Location is TBD",
-          icon: "🖥",
-          status: "open rsvp",
-          summary: "Circle talk about living without AI",
-          story: "Circle talk about living without AI",
-          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/anti-ai-anonymous",
-        },
-        {
-          title: "How StackOverflow died",
-          date: "23 July 2026",
-          time: "19:00",
-          venue: "Location is TBD",
-          icon: "📘",
-          status: "open rsvp",
-          summary: "Stories about StackOverflow and how it was killed by evil AI",
-          story: "Stories about StackOverflow and how it was killed by evil AI",
-          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/how-stackoverflow-died",
-        },
-      ];
+    <script type="module">
+      import { createClient, OAuthStrategy } from "https://esm.sh/@wix/sdk@1";
+      import { rsvpV2, wixEventsV2 } from "https://esm.sh/@wix/events@1";
+
+      const client = createClient({
+        modules: { wixEventsV2, rsvpV2 },
+        auth: OAuthStrategy({ clientId: "ce381ec3-8ff2-42bc-b110-0315bf5989d9" }),
+      });
+
+      const eventIcons = ["💾", "🖥", "📘", "💿", "☎", "🧰", "🪟", "⌨"];
+      let events = [];
+      let selectedEventIndex = 0;
 
       const grid = document.querySelector("#event-grid");
+      const connectionStatus = document.querySelector("#connection-status");
       const detailsWindow = document.querySelector("#details-window");
       const detailsTitle = document.querySelector("#details-title");
       const detailsIcon = document.querySelector("#details-icon");
@@ -610,9 +726,22 @@
       const detailsTime = document.querySelector("#details-time");
       const detailsVenue = document.querySelector("#details-venue");
       const detailsRsvp = document.querySelector("#details-rsvp");
+      const rsvpWindow = document.querySelector("#rsvp-window");
+      const rsvpForm = document.querySelector("#rsvp-form");
+      const selectedRsvpEvent = document.querySelector("#selected-rsvp-event");
+      const firstName = document.querySelector("#first-name");
+      const lastName = document.querySelector("#last-name");
+      const email = document.querySelector("#email");
+      const rsvpStatus = document.querySelector("#rsvp-status");
+      const submitRsvp = document.querySelector("#submit-rsvp");
       const taskTitle = document.querySelector("#task-title");
 
       function openEvent(index) {
+        if (!events[index]) {
+          return;
+        }
+
+        selectedEventIndex = index;
         const event = events[index];
         detailsWindow.style.display = "block";
         detailsTitle.textContent = `${event.title}.exe`;
@@ -622,11 +751,23 @@
         detailsDate.textContent = event.date;
         detailsTime.textContent = event.time;
         detailsVenue.textContent = event.venue;
-        detailsRsvp.href = event.eventPageUrl;
         taskTitle.textContent = event.title;
       }
 
-      grid.innerHTML = events
+      function openRsvp(index = selectedEventIndex) {
+        if (!events[index]) {
+          return;
+        }
+
+        selectedEventIndex = index;
+        selectedRsvpEvent.textContent = events[index].title;
+        rsvpStatus.className = "rsvp-status";
+        rsvpStatus.textContent = "";
+        rsvpWindow.style.display = "block";
+      }
+
+      function renderEvents() {
+        grid.innerHTML = events
         .map(
           (event, index) => `
             <article class="xp-card">
@@ -644,7 +785,7 @@
                 </dl>
                 <div class="button-row">
                   <button class="xp-button" type="button" data-event-index="${index}">Open</button>
-                  <a class="xp-link-button" href="${event.eventPageUrl}">RSVP</a>
+                  <button class="xp-button" type="button" data-rsvp-index="${index}">RSVP</button>
                 </div>
               </div>
             </article>
@@ -652,16 +793,149 @@
         )
         .join("");
 
-      document.querySelectorAll("[data-event-index]").forEach((node) => {
-        node.addEventListener("click", () => openEvent(Number(node.dataset.eventIndex)));
+        document.querySelectorAll("[data-event-index]").forEach((node) => {
+          node.addEventListener("click", () => openEvent(Number(node.dataset.eventIndex)));
+        });
+        document.querySelectorAll("[data-rsvp-index]").forEach((node) => {
+          node.addEventListener("click", () => openRsvp(Number(node.dataset.rsvpIndex)));
+        });
+      }
+
+      async function loadEvents() {
+        try {
+          const result = await client.wixEventsV2.queryEvents(
+            {
+              filter: { status: { $in: ["UPCOMING", "STARTED"] } },
+              sort: [{ fieldName: "dateAndTimeSettings.startDate", order: "ASC" }],
+              paging: { limit: 20 },
+            },
+            { fields: ["DETAILS", "REGISTRATION", "URLS"] },
+          );
+
+          events = (result.events || [])
+            .filter((event) => event._id && event.registration?.initialType === "RSVP")
+            .map((event, index) => ({
+              id: event._id,
+              title: event.title || "Untitled event",
+              date: event.dateAndTimeSettings?.formatted?.startDate || "Date TBA",
+              time: event.dateAndTimeSettings?.formatted?.startTime || "Time TBA",
+              venue: formatVenue(event),
+              icon: eventIcons[index % eventIcons.length],
+              status: formatStatus(event),
+              summary:
+                event.shortDescription?.trim() ||
+                "A live story from programmers who shipped software before AI copilots joined the room.",
+              story:
+                event.shortDescription?.trim() ||
+                "A live story from programmers who shipped software before AI copilots joined the room.",
+            }));
+
+          if (!events.length) {
+            connectionStatus.textContent = "Wix Events: no RSVP events";
+            grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">No files</p><h2>No upcoming RSVP events yet</h2><p>Create RSVP events in Wix and refresh this page.</p></div></article>`;
+            detailsWindow.style.display = "none";
+            return;
+          }
+
+          connectionStatus.textContent = "Wix Events: live";
+          renderEvents();
+          updateDesktopIcons();
+          openEvent(0);
+        } catch (error) {
+          console.error("Failed to load Wix Events", error);
+          connectionStatus.textContent = "Wix Events: offline";
+          grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">Connection error</p><h2>Could not load events</h2><p>Refresh the page after the Wix Events app is ready.</p></div></article>`;
+        }
+      }
+
+      function updateDesktopIcons() {
+        document.querySelectorAll(".desktop-icon").forEach((node, index) => {
+          const event = events[index];
+
+          if (!event) {
+            node.style.display = "none";
+            return;
+          }
+
+          node.style.display = "grid";
+          node.querySelector("span").textContent = event.icon;
+          node.querySelector("small").textContent = event.title;
+        });
+      }
+
+      function formatVenue(event) {
+        if (event.location?.name) {
+          return event.location.name;
+        }
+
+        if (event.location?.locationTbd) {
+          return "Location is TBD";
+        }
+
+        if (event.location?.type === "ONLINE") {
+          return "Online";
+        }
+
+        return "Location is TBD";
+      }
+
+      function formatStatus(event) {
+        return event.registration?.status?.replaceAll("_", " ").toLowerCase() || "open rsvp";
+      }
+
+      rsvpForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const selectedEvent = events[selectedEventIndex];
+
+        if (!selectedEvent) {
+          return;
+        }
+
+        submitRsvp.disabled = true;
+        submitRsvp.textContent = "Sending...";
+        rsvpStatus.className = "rsvp-status pending";
+        rsvpStatus.textContent = "Dialing Wix Events...";
+
+        try {
+          await client.rsvpV2.createRsvp({
+            eventId: selectedEvent.id,
+            firstName: firstName.value.trim(),
+            lastName: lastName.value.trim(),
+            email: email.value.trim(),
+            status: "YES",
+          });
+
+          rsvpStatus.className = "rsvp-status success";
+          rsvpStatus.textContent = "RSVP saved in Wix Events.";
+          rsvpForm.reset();
+        } catch (error) {
+          console.error("Failed to create RSVP", error);
+          rsvpStatus.className = "rsvp-status error";
+          rsvpStatus.textContent =
+            error?.message || "Wix Events could not accept this RSVP yet.";
+        } finally {
+          submitRsvp.disabled = false;
+          submitRsvp.textContent = "Finish";
+        }
       });
+
       document.querySelector("#details-ok").addEventListener("click", () => {
         detailsWindow.style.display = "none";
       });
       document.querySelector("#close-details").addEventListener("click", () => {
         detailsWindow.style.display = "none";
       });
-      openEvent(0);
+      detailsRsvp.addEventListener("click", () => openRsvp());
+      document.querySelector("#featured-rsvp").addEventListener("click", () => openRsvp(0));
+      document.querySelector("#cancel-rsvp").addEventListener("click", () => {
+        rsvpWindow.style.display = "none";
+      });
+      document.querySelector("#close-rsvp").addEventListener("click", () => {
+        rsvpWindow.style.display = "none";
+      });
+
+      loadEvents();
     </script>
   </body>
 </html>

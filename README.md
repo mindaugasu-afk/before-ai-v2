@@ -41,10 +41,10 @@ npm run build
 
 ## Wix Hosting
 
-Wix managed hosting serves `wix-static/index.html`. The interactive local app
-still uses server routes for local previews, but the hosted version links each
-RSVP button to the matching Wix Events page so Wix handles registration forms
-directly.
+Wix managed hosting serves `wix-static/index.html`. The hosted page uses the
+public Wix Headless client id from `wix.config.json` to load upcoming RSVP
+events and submit first name, last name, and email directly to Wix Events. The
+API key stays local in `.env.local` for server-side/local development checks.
 
 ## Learn More
 
