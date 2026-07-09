@@ -119,6 +119,10 @@
         max-width: 1180px;
       }
 
+      .main-window.is-minimized {
+        display: none;
+      }
+
       .xp-titlebar {
         align-items: center;
         background: linear-gradient(180deg, #66a7ff 0%, var(--xp-blue) 18%, var(--xp-blue-dark) 100%);
@@ -147,6 +151,19 @@
         margin: 0;
         max-width: none;
         position: fixed;
+      }
+
+      .main-window.is-maximized {
+        bottom: 48px;
+        left: 8px !important;
+        margin: 0;
+        max-width: none;
+        position: fixed;
+        right: 8px !important;
+        top: 8px !important;
+        transform: none !important;
+        width: auto !important;
+        z-index: 24;
       }
 
       .window-actions {
@@ -189,6 +206,21 @@
       .xp-toolbar {
         background: linear-gradient(180deg, #fbfaf2, var(--xp-cream));
         gap: 7px;
+      }
+
+      .xp-menubar button {
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        min-height: 18px;
+        padding: 0 2px;
+      }
+
+      .xp-menubar button:hover,
+      .xp-menubar button:focus-visible {
+        background: #316ac5;
+        color: #fff;
+        outline: none;
       }
 
       .xp-button,
@@ -249,8 +281,10 @@
         background: rgba(255, 255, 255, 0.74);
         border: 1px solid #9db7ea;
         border-radius: 4px;
+        cursor: pointer;
         min-height: 34px;
         padding: 7px 9px;
+        text-align: left;
       }
 
       .folder.active {
@@ -262,6 +296,10 @@
         display: grid;
         gap: 12px;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+      }
+
+      .no-events-card {
+        min-height: 220px;
       }
 
       .xp-card {
@@ -1070,10 +1108,17 @@
       <section class="xp-window main-window" aria-labelledby="main-window-title">
         <div class="xp-titlebar">
           <span id="main-window-title">Code Before AI - Event Explorer</span>
-          <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
+          <div class="window-actions">
+            <button id="main-minimize" type="button" aria-label="Minimize Event Explorer">_</button>
+            <button id="main-maximize" type="button" aria-label="Maximize Event Explorer">□</button>
+            <button id="main-close" type="button" aria-label="Close Event Explorer">×</button>
+          </div>
         </div>
         <div class="xp-menubar" aria-label="Application menu">
-          <span>File</span><span>Events</span><span>Stories</span><span>Help</span>
+          <button id="menu-file" type="button">File</button>
+          <button id="menu-events" type="button">Events</button>
+          <button id="menu-stories" type="button">Stories</button>
+          <button id="menu-help" type="button">Help</button>
         </div>
         <div class="xp-toolbar">
           <button class="xp-button" id="featured-rsvp">Featured RSVP</button>
@@ -1083,10 +1128,10 @@
         <div class="xp-window-body explorer-layout">
           <aside class="folder-pane">
             <h2>Event Folders</h2>
-            <div class="folder active">📁 All Stories</div>
-            <div class="folder">📁 Learning Before AI</div>
-            <div class="folder">📁 Circle Talks</div>
-            <div class="folder">📁 Internet Lore</div>
+            <button class="folder active" data-folder-filter="all" type="button">📁 All Stories</button>
+            <button class="folder" data-folder-filter="learning" type="button">📁 Learning Before AI</button>
+            <button class="folder" data-folder-filter="circle" type="button">📁 Circle Talks</button>
+            <button class="folder" data-folder-filter="internet" type="button">📁 Internet Lore</button>
           </aside>
           <section class="event-grid" aria-label="Upcoming events" id="event-grid"></section>
         </div>
@@ -1253,7 +1298,7 @@
 
       <footer class="xp-taskbar">
         <button class="start-button" id="start-button" type="button">start</button>
-        <button class="task-button active">Code Before AI</button>
+        <button class="task-button active" id="main-task-button" type="button">Code Before AI</button>
         <button class="task-button" id="task-title">story.exe</button>
         <div class="tray"><span>🔊</span><button id="lan-trigger" type="button">LAN</button><time>7:42 PM</time></div>
       </footer>
@@ -1271,10 +1316,12 @@
       const eventIcons = ["💾", "🖥", "📘", "💿", "☎", "🧰", "🪟", "⌨"];
       let events = [];
       let selectedEventIndex = 0;
+      let currentFolderFilter = "all";
 
       const mainWindow = document.querySelector(".main-window");
       const grid = document.querySelector("#event-grid");
       const connectionStatus = document.querySelector("#connection-status");
+      const folderButtons = document.querySelectorAll("[data-folder-filter]");
       const loadingWindow = document.querySelector("#loading-window");
       const loadingStatus = document.querySelector("#loading-status");
       const detailsWindow = document.querySelector("#details-window");
@@ -1300,6 +1347,7 @@
       const startButton = document.querySelector("#start-button");
       const startMenu = document.querySelector("#start-menu");
       const startEventList = document.querySelector("#start-event-list");
+      const mainTaskButton = document.querySelector("#main-task-button");
       const xpPopup = document.querySelector(".xp-popup");
       let topWindowZIndex = 22;
 
@@ -1339,11 +1387,29 @@
       }
 
       function renderEvents() {
-        grid.innerHTML = events
+        const visibleEvents = getFilteredEvents();
+
+        if (!visibleEvents.length) {
+          grid.innerHTML = `
+            <article class="xp-card no-events-card">
+              <div class="event-copy">
+                <p class="file-label">Empty folder</p>
+                <h2>No matching stories</h2>
+                <p>This folder has no event files yet. Try All Stories or create a matching Wix event.</p>
+              </div>
+            </article>
+          `;
+          return;
+        }
+
+        grid.innerHTML = visibleEvents
         .map(
-          (event, index) => `
+          (event) => {
+            const eventIndex = events.findIndex((item) => item.id === event.id);
+
+            return `
             <article class="xp-card">
-              <button class="event-image" type="button" data-event-index="${index}">
+              <button class="event-image" type="button" data-event-index="${eventIndex}">
                 <span>${event.icon}</span>
               </button>
               <div class="event-copy">
@@ -1356,21 +1422,60 @@
                   <div><dt>Venue</dt><dd>${event.venue}</dd></div>
                 </dl>
                 <div class="button-row">
-                  <button class="xp-button" type="button" data-event-index="${index}">Open</button>
-                  <button class="xp-button" type="button" data-rsvp-index="${index}">RSVP</button>
+                  <button class="xp-button" type="button" data-event-index="${eventIndex}">Open</button>
+                  <button class="xp-button" type="button" data-rsvp-index="${eventIndex}">RSVP</button>
                 </div>
               </div>
             </article>
-          `,
+          `;
+          },
         )
         .join("");
 
-        document.querySelectorAll("[data-event-index]").forEach((node) => {
+        grid.querySelectorAll("[data-event-index]").forEach((node) => {
           node.addEventListener("click", () => openEvent(Number(node.dataset.eventIndex)));
         });
-        document.querySelectorAll("[data-rsvp-index]").forEach((node) => {
+        grid.querySelectorAll("[data-rsvp-index]").forEach((node) => {
           node.addEventListener("click", () => openRsvp(Number(node.dataset.rsvpIndex)));
         });
+      }
+
+      function getFilteredEvents() {
+        if (currentFolderFilter === "all") {
+          return events;
+        }
+
+        return events.filter((event) => {
+          const text = `${event.title} ${event.summary} ${event.story}`.toLowerCase();
+
+          if (currentFolderFilter === "learning") {
+            return text.includes("learn") || text.includes("book") || text.includes("code before ai");
+          }
+
+          if (currentFolderFilter === "circle") {
+            return text.includes("anti") || text.includes("circle");
+          }
+
+          if (currentFolderFilter === "internet") {
+            return text.includes("stack") || text.includes("overflow") || text.includes("internet");
+          }
+
+          return false;
+        });
+      }
+
+      function setFolderFilter(filter) {
+        currentFolderFilter = filter;
+        folderButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.folderFilter === filter);
+        });
+        renderEvents();
+
+        const firstVisibleEvent = getFilteredEvents()[0];
+
+        if (firstVisibleEvent) {
+          openEvent(events.findIndex((event) => event.id === firstVisibleEvent.id));
+        }
       }
 
       async function loadEvents() {
@@ -1432,6 +1537,21 @@
 
       function finishLoading() {
         loadingWindow.classList.add("is-hidden");
+      }
+
+      function showMainWindow() {
+        mainWindow.classList.remove("is-minimized");
+        bringToFront(mainWindow);
+      }
+
+      function minimizeMainWindow() {
+        mainWindow.classList.add("is-minimized");
+      }
+
+      function toggleMainWindowMaximize() {
+        showMainWindow();
+        mainWindow.classList.toggle("is-maximized");
+        mainWindow.classList.toggle("is-dragged", mainWindow.classList.contains("is-maximized"));
       }
 
       function openStartMenu() {
@@ -1532,6 +1652,7 @@
             offsetY: clientY - rect.top,
           };
           if (isMainWindow) {
+            windowElement.classList.remove("is-maximized");
             windowElement.classList.add("is-dragged");
             windowElement.style.width = `${rect.width}px`;
           }
@@ -1701,6 +1822,31 @@
       document.querySelector("#close-rsvp").addEventListener("click", () => {
         rsvpWindow.style.display = "none";
       });
+      document.querySelector("#main-minimize").addEventListener("click", minimizeMainWindow);
+      document.querySelector("#main-maximize").addEventListener("click", toggleMainWindowMaximize);
+      document.querySelector("#main-close").addEventListener("click", showBsod);
+      document.querySelector("#menu-file").addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleStartMenu();
+      });
+      document.querySelector("#menu-events").addEventListener("click", () => {
+        showMainWindow();
+        setFolderFilter("all");
+      });
+      document.querySelector("#menu-stories").addEventListener("click", () => {
+        showMainWindow();
+        openEvent(selectedEventIndex);
+      });
+      document.querySelector("#menu-help").addEventListener("click", () => {
+        xpPopup.style.display = "block";
+      });
+      folderButtons.forEach((button) => {
+        button.addEventListener("click", () => setFolderFilter(button.dataset.folderFilter));
+      });
+      mainTaskButton.addEventListener("click", showMainWindow);
+      document.querySelectorAll(".desktop-icon, .xp-toolbar [data-event-index]").forEach((node) => {
+        node.addEventListener("click", () => openEvent(Number(node.dataset.eventIndex)));
+      });
       startButton.addEventListener("click", (event) => {
         event.stopPropagation();
         toggleStartMenu();
@@ -1709,7 +1855,10 @@
         event.stopPropagation();
       });
       document.querySelector("#start-open-explorer").addEventListener("click", () => {
-        runStartAction(() => openEvent(selectedEventIndex));
+        runStartAction(() => {
+          showMainWindow();
+          openEvent(selectedEventIndex);
+        });
       });
       document.querySelector("#start-rsvp").addEventListener("click", () => {
         runStartAction(() => openRsvp());
