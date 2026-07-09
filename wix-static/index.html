@@ -1722,12 +1722,7 @@
         });
       });
       document.querySelector("#start-log-off").addEventListener("click", closeStartMenu);
-      document.querySelector("#start-shutdown").addEventListener("click", () => {
-        runStartAction(() => {
-          detailsWindow.style.display = "none";
-          rsvpWindow.style.display = "none";
-        });
-      });
+      document.querySelector("#start-shutdown").addEventListener("click", showBsod);
       document.addEventListener("click", closeStartMenu);
       lanTrigger.addEventListener("click", showBsod);
       document.querySelector("#reboot-bsod").addEventListener("click", hideBsod);
