@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Before AI</title>
+    <meta
+      name="description"
+      content="Windows XP-style events where old programmers tell stories about writing code before AI."
+    />
+    <style>
+      :root {
+        --xp-blue: #245edb;
+        --xp-blue-dark: #1746a2;
+        --xp-green: #39a939;
+        --xp-green-dark: #177a17;
+        --xp-cream: #ece9d8;
+        --xp-border: #003c9e;
+        --xp-window: #f3f1e8;
+        --xp-highlight: #fff8c6;
+        --xp-text: #111;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        color: var(--xp-text);
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+        font-size: 13px;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      .xp-screen {
+        background:
+          radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.45), transparent 18%),
+          linear-gradient(140deg, #2368cf 0%, #2b8eea 38%, #78bd38 39%, #3b941f 100%);
+        min-height: 100svh;
+        overflow-x: hidden;
+        padding: 22px 22px 74px 112px;
+        position: relative;
+      }
+
+      .xp-screen::before {
+        background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55), transparent 62%);
+        border-radius: 50%;
+        content: "";
+        height: 360px;
+        left: 48%;
+        opacity: 0.45;
+        position: fixed;
+        top: 10%;
+        transform: rotate(-10deg);
+        width: 520px;
+      }
+
+      .desktop-icons {
+        display: grid;
+        gap: 18px;
+        left: 18px;
+        position: fixed;
+        top: 22px;
+        width: 72px;
+        z-index: 4;
+      }
+
+      .desktop-icon {
+        background: transparent;
+        border: 0;
+        color: #fff;
+        display: grid;
+        gap: 5px;
+        justify-items: center;
+        min-height: 72px;
+        padding: 2px;
+        text-shadow: 1px 1px 2px #12346e;
+      }
+
+      .desktop-icon span {
+        align-items: center;
+        background: linear-gradient(135deg, #fff, #cfdcff);
+        border: 1px solid #163f8f;
+        border-radius: 3px;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+        display: flex;
+        font-size: 27px;
+        height: 38px;
+        justify-content: center;
+        text-shadow: none;
+        width: 38px;
+      }
+
+      .xp-window {
+        background: var(--xp-window);
+        border: 2px solid var(--xp-border);
+        border-radius: 8px 8px 3px 3px;
+        box-shadow:
+          inset 1px 1px 0 rgba(255, 255, 255, 0.9),
+          8px 12px 22px rgba(0, 0, 0, 0.28);
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+      }
+
+      .main-window {
+        margin: 0 auto;
+        max-width: 1180px;
+      }
+
+      .xp-titlebar {
+        align-items: center;
+        background: linear-gradient(180deg, #66a7ff 0%, var(--xp-blue) 18%, var(--xp-blue-dark) 100%);
+        color: #fff;
+        display: flex;
+        font-weight: 700;
+        justify-content: space-between;
+        min-height: 32px;
+        padding: 5px 6px 5px 10px;
+        text-shadow: 1px 1px 0 #08276f;
+      }
+
+      .window-actions {
+        display: flex;
+        gap: 4px;
+      }
+
+      .window-actions span,
+      .window-actions button {
+        align-items: center;
+        background: linear-gradient(180deg, #fff, #8cb9ff 48%, #245edb);
+        border: 1px solid #fff;
+        border-radius: 3px;
+        box-shadow: inset -1px -1px 0 #0d3b9b;
+        color: #fff;
+        display: flex;
+        font-weight: 900;
+        height: 21px;
+        justify-content: center;
+        padding: 0;
+        text-shadow: 1px 1px 0 #08276f;
+        width: 23px;
+      }
+
+      .window-actions button:last-child {
+        background: linear-gradient(180deg, #ffb4a4, #e04720 48%, #a51b0b);
+      }
+
+      .xp-menubar,
+      .xp-toolbar {
+        background: var(--xp-cream);
+        border-bottom: 1px solid #aca899;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        min-height: 26px;
+        padding: 7px 10px;
+      }
+
+      .xp-toolbar {
+        background: linear-gradient(180deg, #fbfaf2, var(--xp-cream));
+        gap: 7px;
+      }
+
+      .xp-button,
+      .xp-link-button,
+      .start-button,
+      .task-button {
+        background: linear-gradient(180deg, #fff, #ece9d8);
+        border: 1px solid #003c74;
+        border-radius: 3px;
+        box-shadow:
+          inset 1px 1px 0 #fff,
+          inset -1px -1px 0 #aca899;
+        color: #000;
+        cursor: pointer;
+        min-height: 28px;
+        min-width: 78px;
+        padding: 5px 12px;
+        text-align: center;
+        text-decoration: none;
+      }
+
+      .connection-status {
+        background: #fff;
+        border: 1px inset #aca899;
+        color: #1746a2;
+        font-weight: 700;
+        margin-left: auto;
+        padding: 5px 8px;
+      }
+
+      .xp-window-body {
+        padding: 12px;
+      }
+
+      .explorer-layout {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 230px minmax(0, 1fr);
+      }
+
+      .folder-pane {
+        align-content: start;
+        background: linear-gradient(180deg, #7ba2e7, #d7e5ff);
+        border: 1px solid #6d8dce;
+        border-radius: 4px;
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+      }
+
+      .folder-pane h2 {
+        color: #163f8f;
+        font-size: 17px;
+        margin: 0 0 4px;
+      }
+
+      .folder {
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid #9db7ea;
+        border-radius: 4px;
+        min-height: 34px;
+        padding: 7px 9px;
+      }
+
+      .folder.active {
+        background: #fff8c6;
+        border-color: #d6a600;
+      }
+
+      .event-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+      }
+
+      .xp-card {
+        background: #fff;
+        border: 1px solid #aca899;
+        box-shadow: inset 1px 1px 0 #fff;
+        display: grid;
+        grid-template-rows: 138px minmax(0, 1fr);
+        min-height: 486px;
+      }
+
+      .event-image {
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.72), transparent 38%),
+          repeating-linear-gradient(90deg, #b7d5ff 0 16px, #99c0ff 16px 32px);
+        border-bottom: 1px solid #aca899;
+        display: grid;
+        place-items: center;
+      }
+
+      .event-image span {
+        align-items: center;
+        background: linear-gradient(180deg, #fffdf2, #d6e4ff);
+        border: 2px solid #245edb;
+        border-radius: 5px;
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.22);
+        display: flex;
+        font-size: 54px;
+        height: 86px;
+        justify-content: center;
+        width: 86px;
+      }
+
+      .event-copy {
+        display: grid;
+        gap: 9px;
+        padding: 12px;
+      }
+
+      .file-label {
+        background: var(--xp-highlight);
+        border: 1px solid #d6a600;
+        color: #5c4a00;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 700;
+        justify-self: start;
+        margin: 0;
+        padding: 3px 7px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1,
+      h2 {
+        color: #0b3d91;
+        line-height: 1.1;
+      }
+
+      .event-copy h2 {
+        font-size: 21px;
+      }
+
+      .event-copy p,
+      .details-window p,
+      .xp-popup p {
+        line-height: 1.45;
+      }
+
+      .event-copy dl {
+        display: grid;
+        gap: 7px;
+        margin: 0;
+      }
+
+      .event-copy dt {
+        color: #565656;
+        font-weight: 700;
+      }
+
+      .event-copy dd {
+        margin: 0;
+      }
+
+      .button-row {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      .button-row.right {
+        justify-content: flex-end;
+      }
+
+      .floating-window {
+        position: fixed;
+        z-index: 8;
+      }
+
+      .details-window {
+        max-width: min(560px, calc(100vw - 28px));
+        right: 28px;
+        top: 96px;
+      }
+
+      .details-window .xp-window-body {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 70px minmax(0, 1fr);
+      }
+
+      .dialog-icon {
+        align-items: center;
+        background: linear-gradient(180deg, #fff, #d7e5ff);
+        border: 2px solid #245edb;
+        border-radius: 5px;
+        display: flex;
+        font-size: 42px;
+        height: 62px;
+        justify-content: center;
+        width: 62px;
+      }
+
+      .details-list {
+        background: #fff;
+        border: 1px inset #aca899;
+        display: grid;
+        gap: 6px;
+        margin: 12px 0;
+        padding: 9px;
+      }
+
+      .xp-popup {
+        background: #fff7bd;
+        border: 1px solid #6f5b00;
+        border-radius: 0 8px 8px;
+        bottom: 62px;
+        box-shadow: 4px 6px 16px rgba(0, 0, 0, 0.24);
+        max-width: min(360px, calc(100vw - 28px));
+        padding: 11px;
+        position: fixed;
+        right: 18px;
+        z-index: 10;
+      }
+
+      .popup-title {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .xp-taskbar {
+        align-items: center;
+        background: linear-gradient(180deg, #4f8cff 0%, var(--xp-blue) 22%, var(--xp-blue-dark) 100%);
+        bottom: 0;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        display: flex;
+        gap: 7px;
+        height: 40px;
+        left: 0;
+        padding: 4px;
+        position: fixed;
+        right: 0;
+        z-index: 30;
+      }
+
+      .start-button {
+        background:
+          radial-gradient(circle at 22% 22%, rgba(255, 255, 255, 0.55), transparent 32%),
+          linear-gradient(180deg, #6bd45d, var(--xp-green) 48%, var(--xp-green-dark));
+        border: 1px solid #0d5f0d;
+        border-radius: 16px 8px 8px 16px;
+        color: #fff;
+        font-size: 18px;
+        font-style: italic;
+        font-weight: 700;
+        height: 32px;
+        min-width: 92px;
+        text-shadow: 1px 1px 0 #0b4a0b;
+      }
+
+      .task-button {
+        background: linear-gradient(180deg, #71a8ff, #2f69d8);
+        border: 1px solid #0d3b9b;
+        color: #fff;
+        height: 30px;
+        max-width: 230px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .task-button.active {
+        background: linear-gradient(180deg, #1f55bd, #123f9e);
+      }
+
+      .tray {
+        align-items: center;
+        background: rgba(100, 180, 255, 0.42);
+        border-left: 1px solid rgba(255, 255, 255, 0.45);
+        color: #fff;
+        display: flex;
+        gap: 9px;
+        height: 32px;
+        margin-left: auto;
+        padding: 0 10px;
+      }
+
+      @media (max-width: 900px) {
+        .xp-screen {
+          padding: 16px 12px 74px;
+        }
+
+        .desktop-icons {
+          display: none;
+        }
+
+        .explorer-layout,
+        .details-window .xp-window-body {
+          grid-template-columns: 1fr;
+        }
+
+        .details-window {
+          bottom: 58px;
+          left: 12px;
+          right: 12px;
+          top: auto;
+        }
+
+        .connection-status {
+          margin-left: 0;
+        }
+
+        .task-button {
+          max-width: 110px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="xp-screen">
+      <section class="desktop-icons" aria-label="Desktop shortcuts">
+        <button class="desktop-icon" data-event-index="0"><span>💾</span><small>Before AI</small></button>
+        <button class="desktop-icon" data-event-index="1"><span>🖥</span><small>Anti AI</small></button>
+        <button class="desktop-icon" data-event-index="2"><span>📘</span><small>StackOverflow</small></button>
+      </section>
+
+      <section class="xp-window main-window" aria-labelledby="main-window-title">
+        <div class="xp-titlebar">
+          <span id="main-window-title">Code Before AI - Event Explorer</span>
+          <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
+        </div>
+        <div class="xp-menubar" aria-label="Application menu">
+          <span>File</span><span>Events</span><span>Stories</span><span>Help</span>
+        </div>
+        <div class="xp-toolbar">
+          <a class="xp-link-button" href="https://mindaugasu.wixsite.com/my-site-178/event-details/how-we-learned-to-code-before-ai-epidemic">Featured RSVP</a>
+          <button class="xp-button" data-event-index="0">Open First Story</button>
+          <span class="connection-status">Wix Events: live links</span>
+        </div>
+        <div class="xp-window-body explorer-layout">
+          <aside class="folder-pane">
+            <h2>Event Folders</h2>
+            <div class="folder active">📁 All Stories</div>
+            <div class="folder">📁 Learning Before AI</div>
+            <div class="folder">📁 Circle Talks</div>
+            <div class="folder">📁 Internet Lore</div>
+          </aside>
+          <section class="event-grid" aria-label="Upcoming events" id="event-grid"></section>
+        </div>
+      </section>
+
+      <section class="xp-window floating-window details-window" aria-label="Event details" id="details-window">
+        <div class="xp-titlebar">
+          <span id="details-title">story.exe</span>
+          <div class="window-actions">
+            <span>_</span><span>□</span><button type="button" id="close-details" aria-label="Close details window">×</button>
+          </div>
+        </div>
+        <div class="xp-window-body">
+          <div class="dialog-icon" id="details-icon">💾</div>
+          <div>
+            <p class="file-label">Opening story archive</p>
+            <h1 id="details-heading">Code Before AI</h1>
+            <p id="details-story"></p>
+            <div class="details-list">
+              <span id="details-date"></span>
+              <span id="details-time"></span>
+              <span id="details-venue"></span>
+            </div>
+            <div class="button-row right">
+              <a class="xp-link-button" id="details-rsvp" href="#">RSVP in Wix Events</a>
+              <button class="xp-button" type="button" id="details-ok">OK</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="xp-popup" role="note">
+        <div class="popup-title">
+          <strong>Windows XP vibe enabled</strong>
+        </div>
+        <p>Pick an event, then RSVP through the real Wix Events page. No server runtime required.</p>
+      </aside>
+
+      <footer class="xp-taskbar">
+        <button class="start-button">start</button>
+        <button class="task-button active">Code Before AI</button>
+        <button class="task-button" id="task-title">story.exe</button>
+        <div class="tray"><span>🔊</span><span>LAN</span><time>7:42 PM</time></div>
+      </footer>
+    </main>
+
+    <script>
+      const events = [
+        {
+          title: "How we learned to code before AI epidemic",
+          date: "23 July 2026",
+          time: "19:00",
+          venue: "Location is TBD",
+          icon: "💾",
+          status: "open rsvp",
+          summary: "Books and other learning ways to help you improve without using AI",
+          story: "Books and other learning ways to help you improve without using AI",
+          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/how-we-learned-to-code-before-ai-epidemic",
+        },
+        {
+          title: "Anti-AI-Anonymous",
+          date: "23 July 2026",
+          time: "19:00",
+          venue: "Location is TBD",
+          icon: "🖥",
+          status: "open rsvp",
+          summary: "Circle talk about living without AI",
+          story: "Circle talk about living without AI",
+          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/anti-ai-anonymous",
+        },
+        {
+          title: "How StackOverflow died",
+          date: "23 July 2026",
+          time: "19:00",
+          venue: "Location is TBD",
+          icon: "📘",
+          status: "open rsvp",
+          summary: "Stories about StackOverflow and how it was killed by evil AI",
+          story: "Stories about StackOverflow and how it was killed by evil AI",
+          eventPageUrl: "https://mindaugasu.wixsite.com/my-site-178/event-details/how-stackoverflow-died",
+        },
+      ];
+
+      const grid = document.querySelector("#event-grid");
+      const detailsWindow = document.querySelector("#details-window");
+      const detailsTitle = document.querySelector("#details-title");
+      const detailsIcon = document.querySelector("#details-icon");
+      const detailsHeading = document.querySelector("#details-heading");
+      const detailsStory = document.querySelector("#details-story");
+      const detailsDate = document.querySelector("#details-date");
+      const detailsTime = document.querySelector("#details-time");
+      const detailsVenue = document.querySelector("#details-venue");
+      const detailsRsvp = document.querySelector("#details-rsvp");
+      const taskTitle = document.querySelector("#task-title");
+
+      function openEvent(index) {
+        const event = events[index];
+        detailsWindow.style.display = "block";
+        detailsTitle.textContent = `${event.title}.exe`;
+        detailsIcon.textContent = event.icon;
+        detailsHeading.textContent = event.title;
+        detailsStory.textContent = event.story;
+        detailsDate.textContent = event.date;
+        detailsTime.textContent = event.time;
+        detailsVenue.textContent = event.venue;
+        detailsRsvp.href = event.eventPageUrl;
+        taskTitle.textContent = event.title;
+      }
+
+      grid.innerHTML = events
+        .map(
+          (event, index) => `
+            <article class="xp-card">
+              <button class="event-image" type="button" data-event-index="${index}">
+                <span>${event.icon}</span>
+              </button>
+              <div class="event-copy">
+                <p class="file-label">${event.status}</p>
+                <h2>${event.title}</h2>
+                <p>${event.summary}</p>
+                <dl>
+                  <div><dt>Date</dt><dd>${event.date}</dd></div>
+                  <div><dt>Time</dt><dd>${event.time}</dd></div>
+                  <div><dt>Venue</dt><dd>${event.venue}</dd></div>
+                </dl>
+                <div class="button-row">
+                  <button class="xp-button" type="button" data-event-index="${index}">Open</button>
+                  <a class="xp-link-button" href="${event.eventPageUrl}">RSVP</a>
+                </div>
+              </div>
+            </article>
+          `,
+        )
+        .join("");
+
+      document.querySelectorAll("[data-event-index]").forEach((node) => {
+        node.addEventListener("click", () => openEvent(Number(node.dataset.eventIndex)));
+      });
+      document.querySelector("#details-ok").addEventListener("click", () => {
+        detailsWindow.style.display = "none";
+      });
+      document.querySelector("#close-details").addEventListener("click", () => {
+        detailsWindow.style.display = "none";
+      });
+      openEvent(0);
+    </script>
+  </body>
+</html>

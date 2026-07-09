@@ -1,0 +1,8 @@
+{
+  "projectType": "Site",
+  "appId": "ce381ec3-8ff2-42bc-b110-0315bf5989d9",
+  "siteId": "eb797127-41f2-4e2c-a87a-d664313153ec",
+  "site": {
+    "outputDirectory": "./wix-static"
+  }
+}

@@ -38,3 +38,7 @@ yarn-error.log*
 next-env.d.ts
 /dist/
 /.wrangler/
+/.wix/
+/.agents/
+/bootstrap.mjs
+/skills-lock.json
