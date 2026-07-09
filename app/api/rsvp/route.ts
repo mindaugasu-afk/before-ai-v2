@@ -1,24 +1,35 @@
-import { createWixRsvp } from "../../wix-events";
+import { createWixRsvp, getWixErrorStatus } from "../../wix-events";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const eventId = getString(body?.eventId);
-  const fullName = getString(body?.fullName);
+  const firstName = getString(body?.firstName);
+  const lastName = getString(body?.lastName);
   const email = getString(body?.email);
 
-  if (!eventId || !fullName || !email) {
+  if (!eventId || !firstName || !lastName || !email) {
     return Response.json(
-      { error: "Event, name, and email are required." },
+      { error: "Event, first name, last name, and email are required." },
       { status: 400 },
     );
   }
 
   try {
-    const result = await createWixRsvp({ eventId, fullName, email });
+    const result = await createWixRsvp({ eventId, firstName, lastName, email });
 
     return Response.json(result);
   } catch (error) {
     console.error("Failed to create Wix RSVP", error);
+
+    if (getWixErrorStatus(error) === 403) {
+      return Response.json(
+        {
+          error:
+            "Wix rejected the RSVP because this key can read events but cannot create RSVPs. Add the WIX_EVENTS.CREATE_RSVP permission to the Wix API key, then try again.",
+        },
+        { status: 403 },
+      );
+    }
 
     return Response.json(
       { error: "Wix Events could not accept this RSVP yet." },

@@ -19,9 +19,9 @@ export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(true);
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [favoriteTool, setFavoriteTool] = useState("Borland");
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>({
     tone: "idle",
     message: "",
@@ -42,10 +42,10 @@ export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
   const submitRsvp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!fullName.trim() || !email.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
       setRsvpStatus({
         tone: "error",
-        message: "Type your name and email before finishing the wizard.",
+        message: "Type your first name, last name, and email before finishing.",
       });
       return;
     }
@@ -63,9 +63,9 @@ export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
         },
         body: JSON.stringify({
           eventId: selectedEvent.id,
-          fullName,
+          firstName,
+          lastName,
           email,
-          favoriteTool,
         }),
       });
       const result = (await response.json()) as { message?: string; error?: string };
@@ -222,12 +222,21 @@ export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
               <h2>Reserve a chair and a story</h2>
               <p className="selected-rsvp-event">{selectedEvent.title}</p>
               <label>
-                Your name
+                First name
                 <input
-                  autoComplete="name"
-                  onChange={(event) => setFullName(event.target.value)}
-                  placeholder="Ada Lovelace"
-                  value={fullName}
+                  autoComplete="given-name"
+                  onChange={(event) => setFirstName(event.target.value)}
+                  placeholder="Ada"
+                  value={firstName}
+                />
+              </label>
+              <label>
+                Last name
+                <input
+                  autoComplete="family-name"
+                  onChange={(event) => setLastName(event.target.value)}
+                  placeholder="Lovelace"
+                  value={lastName}
                 />
               </label>
               <label>
@@ -239,18 +248,6 @@ export function XpDesktop({ events, eventsSource }: XpDesktopProps) {
                   type="email"
                   value={email}
                 />
-              </label>
-              <label>
-                Favorite old tool
-                <select
-                  onChange={(event) => setFavoriteTool(event.target.value)}
-                  value={favoriteTool}
-                >
-                  <option>Borland</option>
-                  <option>Visual Basic 6</option>
-                  <option>Notepad</option>
-                  <option>Turbo Pascal</option>
-                </select>
               </label>
               {rsvpStatus.message ? (
                 <p className={`rsvp-status ${rsvpStatus.tone}`}>{rsvpStatus.message}</p>

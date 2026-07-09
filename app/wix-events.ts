@@ -17,7 +17,8 @@ type LoadStoryEventsResult = {
 
 type RsvpInput = {
   eventId: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
 };
 
@@ -55,7 +56,12 @@ export async function loadStoryEvents(): Promise<LoadStoryEventsResult> {
   }
 }
 
-export async function createWixRsvp({ eventId, fullName, email }: RsvpInput) {
+export async function createWixRsvp({
+  eventId,
+  firstName,
+  lastName,
+  email,
+}: RsvpInput) {
   const client = getWixClient();
 
   if (!client) {
@@ -65,8 +71,6 @@ export async function createWixRsvp({ eventId, fullName, email }: RsvpInput) {
         "Demo RSVP saved locally. Add Wix API credentials to send it into Wix Events.",
     };
   }
-
-  const { firstName, lastName } = splitName(fullName);
 
   await client.rsvpV2.createRsvp({
     eventId,
@@ -205,11 +209,8 @@ function formatTime(date?: Date | string | null) {
   }).format(new Date(date));
 }
 
-function splitName(fullName: string) {
-  const [firstName, ...lastNameParts] = fullName.trim().split(/\s+/);
-
-  return {
-    firstName,
-    lastName: lastNameParts.join(" ") || "-",
-  };
+export function getWixErrorStatus(error: unknown) {
+  return typeof error === "object" && error !== null && "status" in error
+    ? (error.status as number)
+    : undefined;
 }
