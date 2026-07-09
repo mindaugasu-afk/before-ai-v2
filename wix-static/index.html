@@ -1838,6 +1838,7 @@
           rsvpStatus.className = "rsvp-status success";
           rsvpStatus.textContent = "RSVP saved in Wix Events.";
           rsvpForm.reset();
+          rsvpWindow.style.display = "none";
         } catch (error) {
           await minimumTransferTime;
           console.error("Failed to create RSVP", error);
