@@ -711,6 +711,183 @@
         text-shadow: 1px 1px 0 #0b4a0b;
       }
 
+      .start-button.is-active {
+        box-shadow:
+          inset 2px 2px 2px rgba(0, 0, 0, 0.35),
+          inset -1px -1px 0 rgba(255, 255, 255, 0.55);
+        transform: translateY(1px);
+      }
+
+      .start-menu {
+        background: #fff;
+        border: 2px solid var(--xp-blue);
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        bottom: 40px;
+        box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.36);
+        display: none;
+        left: 0;
+        overflow: hidden;
+        position: fixed;
+        width: min(520px, calc(100vw - 12px));
+        z-index: 45;
+      }
+
+      .start-menu.is-open {
+        display: block;
+      }
+
+      .start-header {
+        align-items: center;
+        background: linear-gradient(180deg, #66a7ff, #245edb 42%, #1746a2);
+        color: #fff;
+        display: flex;
+        gap: 10px;
+        min-height: 62px;
+        padding: 10px 12px;
+        text-shadow: 1px 1px 0 #08276f;
+      }
+
+      .start-avatar {
+        align-items: center;
+        background: linear-gradient(180deg, #fff, #d7e5ff);
+        border: 2px solid #fff;
+        border-radius: 6px;
+        color: #0b3d91;
+        display: flex;
+        font-size: 30px;
+        height: 44px;
+        justify-content: center;
+        text-shadow: none;
+        width: 44px;
+      }
+
+      .start-header strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .start-header small {
+        display: block;
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
+      .start-columns {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 190px;
+        min-height: 300px;
+      }
+
+      .start-programs,
+      .start-system {
+        display: grid;
+        gap: 5px;
+        align-content: start;
+        padding: 10px;
+      }
+
+      .start-programs {
+        background: #fff;
+      }
+
+      .start-system {
+        background: linear-gradient(180deg, #d7e5ff, #b9d2ff);
+        border-left: 1px solid #9db7ea;
+      }
+
+      .start-section-title {
+        color: #565656;
+        font-size: 11px;
+        font-weight: 700;
+        margin: 4px 2px;
+        text-transform: uppercase;
+      }
+
+      .start-item {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 3px;
+        color: #111;
+        cursor: pointer;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 34px minmax(0, 1fr);
+        min-height: 42px;
+        padding: 5px 7px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .start-item:hover,
+      .start-item:focus-visible {
+        background: #316ac5;
+        color: #fff;
+        outline: none;
+      }
+
+      .start-item-icon {
+        align-items: center;
+        background: linear-gradient(180deg, #fff, #d7e5ff);
+        border: 1px solid #6d8dce;
+        border-radius: 4px;
+        display: flex;
+        font-size: 20px;
+        height: 30px;
+        justify-content: center;
+        width: 30px;
+      }
+
+      .start-item:hover .start-item-icon,
+      .start-item:focus-visible .start-item-icon {
+        color: #0b3d91;
+      }
+
+      .start-item strong,
+      .start-item small {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .start-item strong {
+        font-size: 13px;
+      }
+
+      .start-item small {
+        font-size: 11px;
+        opacity: 0.78;
+      }
+
+      .start-footer {
+        align-items: center;
+        background: linear-gradient(180deg, #245edb, #1746a2);
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        padding: 8px;
+      }
+
+      .start-footer button {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        gap: 6px;
+        min-height: 28px;
+        padding: 4px 8px;
+        text-shadow: 1px 1px 0 #08276f;
+      }
+
+      .start-footer button:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
       .task-button {
         background: linear-gradient(180deg, #71a8ff, #2f69d8);
         border: 1px solid #0d3b9b;
@@ -857,6 +1034,15 @@
 
         .task-button {
           max-width: 110px;
+        }
+
+        .start-columns {
+          grid-template-columns: 1fr;
+        }
+
+        .start-system {
+          border-left: 0;
+          border-top: 1px solid #9db7ea;
         }
 
         .bsod-screen {
@@ -1008,8 +1194,57 @@
         </div>
       </section>
 
+      <section class="start-menu" id="start-menu" aria-label="Start menu">
+        <div class="start-header">
+          <span class="start-avatar">💾</span>
+          <div>
+            <strong>Code Before AI</strong>
+            <small>Logged in as Old Programmer</small>
+          </div>
+        </div>
+        <div class="start-columns">
+          <div class="start-programs">
+            <div class="start-section-title">Pinned programs</div>
+            <button class="start-item" id="start-open-explorer" type="button">
+              <span class="start-item-icon">🪟</span>
+              <span><strong>Event Explorer</strong><small>Open the current story archive</small></span>
+            </button>
+            <button class="start-item" id="start-rsvp" type="button">
+              <span class="start-item-icon">✓</span>
+              <span><strong>RSVP Wizard</strong><small>Reserve a chair for the selected event</small></span>
+            </button>
+            <div class="start-section-title">Upcoming events</div>
+            <div id="start-event-list">
+              <button class="start-item" type="button" disabled>
+                <span class="start-item-icon">⏳</span>
+                <span><strong>Loading events...</strong><small>Contacting Wix Events</small></span>
+              </button>
+            </div>
+          </div>
+          <div class="start-system">
+            <div class="start-section-title">System</div>
+            <button class="start-item" id="start-refresh" type="button">
+              <span class="start-item-icon">🔄</span>
+              <span><strong>Refresh Events</strong><small>Copy fresh files from Wix</small></span>
+            </button>
+            <button class="start-item" id="start-bsod" type="button">
+              <span class="start-item-icon">💥</span>
+              <span><strong>Crash Test</strong><small>Run the blue-screen easter egg</small></span>
+            </button>
+            <button class="start-item" id="start-about" type="button">
+              <span class="start-item-icon">❔</span>
+              <span><strong>About</strong><small>Show the yellow XP note</small></span>
+            </button>
+          </div>
+        </div>
+        <div class="start-footer">
+          <button id="start-log-off" type="button">🔑 Log Off</button>
+          <button id="start-shutdown" type="button">⏻ Turn Off Computer</button>
+        </div>
+      </section>
+
       <footer class="xp-taskbar">
-        <button class="start-button">start</button>
+        <button class="start-button" id="start-button" type="button">start</button>
         <button class="task-button active">Code Before AI</button>
         <button class="task-button" id="task-title">story.exe</button>
         <div class="tray"><span>🔊</span><button id="lan-trigger" type="button">LAN</button><time>7:42 PM</time></div>
@@ -1053,6 +1288,10 @@
       const taskTitle = document.querySelector("#task-title");
       const bsodScreen = document.querySelector("#bsod-screen");
       const lanTrigger = document.querySelector("#lan-trigger");
+      const startButton = document.querySelector("#start-button");
+      const startMenu = document.querySelector("#start-menu");
+      const startEventList = document.querySelector("#start-event-list");
+      const xpPopup = document.querySelector(".xp-popup");
       let topWindowZIndex = 22;
 
       function openEvent(index) {
@@ -1158,6 +1397,7 @@
             connectionStatus.textContent = "Wix Events: no RSVP events";
             loadingStatus.textContent = "No event files found.";
             grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">No files</p><h2>No upcoming RSVP events yet</h2><p>Create RSVP events in Wix and refresh this page.</p></div></article>`;
+            renderStartEvents();
             detailsWindow.style.display = "none";
             window.setTimeout(finishLoading, 900);
             return;
@@ -1166,6 +1406,7 @@
           connectionStatus.textContent = "Wix Events: live";
           loadingStatus.textContent = "Opening event explorer...";
           renderEvents();
+          renderStartEvents();
           updateDesktopIcons();
           openEvent(0);
           finishLoading();
@@ -1173,6 +1414,8 @@
           console.error("Failed to load Wix Events", error);
           connectionStatus.textContent = "Wix Events: offline";
           loadingStatus.textContent = "Copy failed. Showing recovery message.";
+          events = [];
+          renderStartEvents();
           grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">Connection error</p><h2>Could not load events</h2><p>Refresh the page after the Wix Events app is ready.</p></div></article>`;
           window.setTimeout(finishLoading, 1200);
         }
@@ -1180,6 +1423,76 @@
 
       function finishLoading() {
         loadingWindow.classList.add("is-hidden");
+      }
+
+      function openStartMenu() {
+        startMenu.classList.add("is-open");
+        startButton.classList.add("is-active");
+      }
+
+      function closeStartMenu() {
+        startMenu.classList.remove("is-open");
+        startButton.classList.remove("is-active");
+      }
+
+      function toggleStartMenu() {
+        if (startMenu.classList.contains("is-open")) {
+          closeStartMenu();
+        } else {
+          openStartMenu();
+        }
+      }
+
+      function runStartAction(action) {
+        closeStartMenu();
+        action();
+      }
+
+      function renderStartEvents() {
+        if (!events.length) {
+          startEventList.innerHTML = `
+            <button class="start-item" type="button" disabled>
+              <span class="start-item-icon">📭</span>
+              <span><strong>No event files</strong><small>Create RSVP events in Wix</small></span>
+            </button>
+          `;
+          return;
+        }
+
+        startEventList.innerHTML = events
+          .slice(0, 5)
+          .map(
+            (event, index) => `
+              <button class="start-item" data-start-event-index="${index}" type="button">
+                <span class="start-item-icon">${event.icon}</span>
+                <span><strong>${escapeHtml(event.title)}</strong><small>${escapeHtml(event.date)} · ${escapeHtml(event.time)}</small></span>
+              </button>
+            `,
+          )
+          .join("");
+
+        document.querySelectorAll("[data-start-event-index]").forEach((node) => {
+          node.addEventListener("click", () => {
+            runStartAction(() => openEvent(Number(node.dataset.startEventIndex)));
+          });
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      async function refreshEventsFromStart() {
+        closeStartMenu();
+        loadingWindow.classList.remove("is-hidden");
+        loadingStatus.textContent = "Refreshing event files...";
+        connectionStatus.textContent = "Wix Events: loading";
+        await loadEvents();
       }
 
       function bringToFront(windowElement) {
@@ -1280,6 +1593,7 @@
       }
 
       function showBsod() {
+        closeStartMenu();
         bsodScreen.classList.add("is-visible");
       }
 
@@ -1373,11 +1687,43 @@
       document.querySelector("#close-rsvp").addEventListener("click", () => {
         rsvpWindow.style.display = "none";
       });
+      startButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleStartMenu();
+      });
+      startMenu.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+      document.querySelector("#start-open-explorer").addEventListener("click", () => {
+        runStartAction(() => openEvent(selectedEventIndex));
+      });
+      document.querySelector("#start-rsvp").addEventListener("click", () => {
+        runStartAction(() => openRsvp());
+      });
+      document.querySelector("#start-refresh").addEventListener("click", refreshEventsFromStart);
+      document.querySelector("#start-bsod").addEventListener("click", showBsod);
+      document.querySelector("#start-about").addEventListener("click", () => {
+        runStartAction(() => {
+          xpPopup.style.display = "block";
+        });
+      });
+      document.querySelector("#start-log-off").addEventListener("click", closeStartMenu);
+      document.querySelector("#start-shutdown").addEventListener("click", () => {
+        runStartAction(() => {
+          detailsWindow.style.display = "none";
+          rsvpWindow.style.display = "none";
+        });
+      });
+      document.addEventListener("click", closeStartMenu);
       lanTrigger.addEventListener("click", showBsod);
       document.querySelector("#reboot-bsod").addEventListener("click", hideBsod);
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && bsodScreen.classList.contains("is-visible")) {
-          hideBsod();
+        if (event.key === "Escape") {
+          closeStartMenu();
+
+          if (bsodScreen.classList.contains("is-visible")) {
+            hideBsod();
+          }
         }
 
         if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "b") {
