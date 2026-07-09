@@ -131,14 +131,22 @@
         text-shadow: 1px 1px 0 #08276f;
       }
 
-      .floating-window .xp-titlebar {
+      .floating-window .xp-titlebar,
+      .main-window .xp-titlebar {
         cursor: move;
         touch-action: none;
         user-select: none;
       }
 
-      .floating-window.is-front {
+      .floating-window.is-front,
+      .main-window.is-front {
         z-index: 22;
+      }
+
+      .main-window.is-dragged {
+        margin: 0;
+        max-width: none;
+        position: fixed;
       }
 
       .window-actions {
@@ -1264,6 +1272,7 @@
       let events = [];
       let selectedEventIndex = 0;
 
+      const mainWindow = document.querySelector(".main-window");
       const grid = document.querySelector("#event-grid");
       const connectionStatus = document.querySelector("#connection-status");
       const loadingWindow = document.querySelector("#loading-window");
@@ -1497,7 +1506,7 @@
 
       function bringToFront(windowElement) {
         topWindowZIndex += 1;
-        document.querySelectorAll(".floating-window").forEach((element) => {
+        document.querySelectorAll(".floating-window, .main-window").forEach((element) => {
           element.classList.remove("is-front");
         });
         windowElement.classList.add("is-front");
@@ -1516,11 +1525,16 @@
         const startDrag = (clientX, clientY, pointerId = "mouse") => {
           bringToFront(windowElement);
           const rect = windowElement.getBoundingClientRect();
+          const isMainWindow = windowElement.classList.contains("main-window");
           dragState = {
             pointerId,
             offsetX: clientX - rect.left,
             offsetY: clientY - rect.top,
           };
+          if (isMainWindow) {
+            windowElement.classList.add("is-dragged");
+            windowElement.style.width = `${rect.width}px`;
+          }
           windowElement.style.left = `${rect.left}px`;
           windowElement.style.top = `${rect.top}px`;
           windowElement.style.right = "auto";
@@ -1730,7 +1744,7 @@
           showBsod();
         }
       });
-      [detailsWindow, rsvpWindow, loadingWindow].forEach(makeWindowDraggable);
+      [mainWindow, detailsWindow, rsvpWindow, loadingWindow].forEach(makeWindowDraggable);
 
       loadEvents();
     </script>
