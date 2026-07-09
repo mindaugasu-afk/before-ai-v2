@@ -412,14 +412,39 @@
         top: 96px;
       }
 
+      .success-alert-window {
+        display: none;
+        left: 50%;
+        max-width: min(420px, calc(100vw - 28px));
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 420px;
+        z-index: 19;
+      }
+
       .details-window.is-opening {
         animation: open-program 0.28s ease-out;
       }
 
-      .details-window .xp-window-body {
+      .details-window .xp-window-body,
+      .success-alert-window .xp-window-body {
         display: grid;
         gap: 14px;
         grid-template-columns: 70px minmax(0, 1fr);
+      }
+
+      .success-alert-window .xp-window-body {
+        background: #ece9d8;
+      }
+
+      .success-alert-window h2 {
+        color: #111;
+        font-size: 18px;
+        margin-bottom: 7px;
+      }
+
+      .success-alert-window p {
+        line-height: 1.4;
       }
 
       .dialog-icon {
@@ -1035,6 +1060,7 @@
 
         .explorer-layout,
         .details-window .xp-window-body,
+        .success-alert-window .xp-window-body,
         .wizard-body {
           grid-template-columns: 1fr;
         }
@@ -1067,6 +1093,13 @@
           left: 12px;
           top: auto;
           transform: none;
+          width: auto;
+        }
+
+        .success-alert-window {
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
           width: auto;
         }
 
@@ -1224,6 +1257,25 @@
         </div>
       </section>
 
+      <section class="xp-window floating-window success-alert-window" aria-live="polite" aria-label="Registration success" id="success-alert-window">
+        <div class="xp-titlebar">
+          <span>Registration Complete</span>
+          <div class="window-actions">
+            <button type="button" id="close-success-alert" aria-label="Close registration success alert">×</button>
+          </div>
+        </div>
+        <div class="xp-window-body">
+          <div class="dialog-icon">i</div>
+          <div>
+            <h2>Registration successful</h2>
+            <p id="success-alert-message">Your RSVP was saved in Wix Events.</p>
+            <div class="button-row right">
+              <button class="xp-button" id="success-alert-ok" type="button">OK</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <aside class="xp-popup" role="note">
         <div class="popup-title">
           <strong>Windows XP vibe enabled</strong>
@@ -1346,6 +1398,8 @@
       const email = document.querySelector("#email");
       const rsvpStatus = document.querySelector("#rsvp-status");
       const submitRsvp = document.querySelector("#submit-rsvp");
+      const successAlertWindow = document.querySelector("#success-alert-window");
+      const successAlertMessage = document.querySelector("#success-alert-message");
       const taskTitle = document.querySelector("#task-title");
       const bsodScreen = document.querySelector("#bsod-screen");
       const lanTrigger = document.querySelector("#lan-trigger");
@@ -1390,6 +1444,12 @@
         rsvpStatus.textContent = "";
         bringToFront(rsvpWindow);
         rsvpWindow.style.display = "block";
+      }
+
+      function showRsvpSuccessAlert(eventTitle) {
+        successAlertMessage.textContent = `Your RSVP for "${eventTitle}" was saved in Wix Events.`;
+        successAlertWindow.style.display = "block";
+        bringToFront(successAlertWindow);
       }
 
       function renderEvents() {
@@ -1839,6 +1899,7 @@
           rsvpStatus.textContent = "RSVP saved in Wix Events.";
           rsvpForm.reset();
           rsvpWindow.style.display = "none";
+          showRsvpSuccessAlert(selectedEvent.title);
         } catch (error) {
           await minimumTransferTime;
           console.error("Failed to create RSVP", error);
@@ -1865,6 +1926,12 @@
       });
       document.querySelector("#close-rsvp").addEventListener("click", () => {
         rsvpWindow.style.display = "none";
+      });
+      document.querySelector("#success-alert-ok").addEventListener("click", () => {
+        successAlertWindow.style.display = "none";
+      });
+      document.querySelector("#close-success-alert").addEventListener("click", () => {
+        successAlertWindow.style.display = "none";
       });
       document.querySelector("#main-minimize").addEventListener("click", minimizeMainWindow);
       document.querySelector("#main-maximize").addEventListener("click", toggleMainWindowMaximize);
@@ -1932,7 +1999,7 @@
           showBsod();
         }
       });
-      [mainWindow, detailsWindow, rsvpWindow, loadingWindow].forEach(makeWindowDraggable);
+      [mainWindow, detailsWindow, rsvpWindow, loadingWindow, successAlertWindow].forEach(makeWindowDraggable);
 
       loadEvents();
     </script>
