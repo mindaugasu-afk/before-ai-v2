@@ -72,16 +72,17 @@ export async function createWixRsvp({
     };
   }
 
-  await client.rsvpV2.createRsvp({
+  // The generated type marks additionalGuestDetails as required, but Wix rejects
+  // those fields when the event form does not include additional guests.
+  const rsvp = {
     eventId,
     email,
     firstName,
     lastName,
     status: "YES",
-    additionalGuestDetails: {
-      guestCount: 0,
-    },
-  });
+  } as unknown as Parameters<typeof client.rsvpV2.createRsvp>[0];
+
+  await client.rsvpV2.createRsvp(rsvp);
 
   return {
     mode: "wix",
@@ -213,4 +214,26 @@ export function getWixErrorStatus(error: unknown) {
   return typeof error === "object" && error !== null && "status" in error
     ? (error.status as number)
     : undefined;
+}
+
+export function getWixErrorMessage(error: unknown) {
+  if (typeof error !== "object" || error === null) {
+    return null;
+  }
+
+  const response = "response" in error ? error.response : null;
+
+  if (typeof response !== "object" || response === null || !("data" in response)) {
+    return null;
+  }
+
+  const data = response.data;
+
+  if (typeof data !== "object" || data === null || !("message" in data)) {
+    return null;
+  }
+
+  return typeof data.message === "string" && data.message.trim()
+    ? data.message
+    : null;
 }

@@ -1,4 +1,8 @@
-import { createWixRsvp, getWixErrorStatus } from "../../wix-events";
+import {
+  createWixRsvp,
+  getWixErrorMessage,
+  getWixErrorStatus,
+} from "../../wix-events";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -29,6 +33,12 @@ export async function POST(request: Request) {
         },
         { status: 403 },
       );
+    }
+
+    const wixMessage = getWixErrorMessage(error);
+
+    if (wixMessage) {
+      return Response.json({ error: wixMessage }, { status: 400 });
     }
 
     return Response.json(
