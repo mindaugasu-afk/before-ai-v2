@@ -1139,23 +1139,23 @@
 
       <section class="xp-window floating-window loading-window" aria-live="polite" id="loading-window">
         <div class="xp-titlebar">
-          <span>Copying Event Files</span>
+          <span id="transfer-title">Copying Event Files</span>
           <div class="window-actions" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
         </div>
         <div class="xp-window-body transfer-body">
           <div class="transfer-copy">
-            <h2>Downloading stories from Wix Events...</h2>
-            <p>Please wait while Setup Wizard copies the latest event files to your desktop.</p>
+            <h2 id="transfer-heading">Downloading stories from Wix Events...</h2>
+            <p id="transfer-message">Please wait while Setup Wizard copies the latest event files to your desktop.</p>
           </div>
           <div class="transfer-animation" aria-hidden="true">
-            <div class="transfer-folder">📁<small>Wix Events</small></div>
+            <div class="transfer-folder">📁<small id="transfer-source">Wix Events</small></div>
             <div class="paper-lane">
               <span class="flying-paper"></span>
               <span class="flying-paper"></span>
               <span class="flying-paper"></span>
               <span class="flying-paper"></span>
             </div>
-            <div class="transfer-folder">💾<small>XP Site</small></div>
+            <div class="transfer-folder">💾<small id="transfer-target">XP Site</small></div>
           </div>
           <div class="progress-shell" aria-hidden="true"><div class="progress-bar"></div></div>
           <div class="loading-status" id="loading-status">Contacting Wix Events...</div>
@@ -1323,6 +1323,11 @@
       const connectionStatus = document.querySelector("#connection-status");
       const folderButtons = document.querySelectorAll("[data-folder-filter]");
       const loadingWindow = document.querySelector("#loading-window");
+      const transferTitle = document.querySelector("#transfer-title");
+      const transferHeading = document.querySelector("#transfer-heading");
+      const transferMessage = document.querySelector("#transfer-message");
+      const transferSource = document.querySelector("#transfer-source");
+      const transferTarget = document.querySelector("#transfer-target");
       const loadingStatus = document.querySelector("#loading-status");
       const detailsWindow = document.querySelector("#details-window");
       const detailsTitle = document.querySelector("#details-title");
@@ -1350,6 +1355,7 @@
       const mainTaskButton = document.querySelector("#main-task-button");
       const xpPopup = document.querySelector(".xp-popup");
       let topWindowZIndex = 22;
+      const rsvpTransferMinimumMs = 2000;
 
       function openEvent(index) {
         if (!events[index]) {
@@ -1535,6 +1541,30 @@
         }
       }
 
+      function delay(ms) {
+        return new Promise((resolve) => {
+          window.setTimeout(resolve, ms);
+        });
+      }
+
+      function showTransferDialog({
+        title = "Copying Event Files",
+        heading = "Downloading stories from Wix Events...",
+        message = "Please wait while Setup Wizard copies the latest event files to your desktop.",
+        status = "Contacting Wix Events...",
+        source = "Wix Events",
+        target = "XP Site",
+      } = {}) {
+        transferTitle.textContent = title;
+        transferHeading.textContent = heading;
+        transferMessage.textContent = message;
+        transferSource.textContent = source;
+        transferTarget.textContent = target;
+        loadingStatus.textContent = status;
+        loadingWindow.classList.remove("is-hidden");
+        bringToFront(loadingWindow);
+      }
+
       function finishLoading() {
         loadingWindow.classList.add("is-hidden");
       }
@@ -1618,8 +1648,9 @@
 
       async function refreshEventsFromStart() {
         closeStartMenu();
-        loadingWindow.classList.remove("is-hidden");
-        loadingStatus.textContent = "Refreshing event files...";
+        showTransferDialog({
+          status: "Refreshing event files...",
+        });
         connectionStatus.textContent = "Wix Events: loading";
         await loadEvents();
       }
@@ -1784,6 +1815,15 @@
         submitRsvp.textContent = "Sending...";
         rsvpStatus.className = "rsvp-status pending";
         rsvpStatus.textContent = "Dialing Wix Events...";
+        showTransferDialog({
+          title: "Sending RSVP",
+          heading: "Sending RSVP card to Wix Events...",
+          message: "Please wait while RSVP Wizard transfers your reservation through the old network pipes.",
+          status: "Copying RSVP card...",
+          source: "RSVP Wizard",
+          target: "Wix Events",
+        });
+        const minimumTransferTime = delay(rsvpTransferMinimumMs);
 
         try {
           await client.rsvpV2.createRsvp({
@@ -1793,16 +1833,19 @@
             email: email.value.trim(),
             status: "YES",
           });
+          await minimumTransferTime;
 
           rsvpStatus.className = "rsvp-status success";
           rsvpStatus.textContent = "RSVP saved in Wix Events.";
           rsvpForm.reset();
         } catch (error) {
+          await minimumTransferTime;
           console.error("Failed to create RSVP", error);
           rsvpStatus.className = "rsvp-status error";
           rsvpStatus.textContent =
             error?.message || "Wix Events could not accept this RSVP yet.";
         } finally {
+          finishLoading();
           submitRsvp.disabled = false;
           submitRsvp.textContent = "Finish";
         }
