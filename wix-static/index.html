@@ -1357,8 +1357,8 @@
     </main>
 
     <script type="module">
-      import { createClient, OAuthStrategy } from "https://esm.sh/@wix/sdk@1";
-      import { rsvpV2, wixEventsV2 } from "https://esm.sh/@wix/events@1";
+      import { createClient, OAuthStrategy } from "https://esm.sh/@wix/sdk@1.21.13";
+      import { rsvpV2, wixEventsV2 } from "https://esm.sh/@wix/events@1.0.803";
 
       const client = createClient({
         modules: { wixEventsV2, rsvpV2 },
@@ -1409,6 +1409,7 @@
       const mainTaskButton = document.querySelector("#main-task-button");
       const xpPopup = document.querySelector(".xp-popup");
       let topWindowZIndex = 22;
+      const eventLoadTimeoutMs = 10000;
       const rsvpTransferMinimumMs = 2000;
 
       function openEvent(index) {
@@ -1546,13 +1547,17 @@
 
       async function loadEvents() {
         try {
-          const result = await client.wixEventsV2.queryEvents(
-            {
-              filter: { status: { $in: ["UPCOMING", "STARTED"] } },
-              sort: [{ fieldName: "dateAndTimeSettings.startDate", order: "ASC" }],
-              paging: { limit: 20 },
-            },
-            { fields: ["DETAILS", "REGISTRATION", "URLS"] },
+          const result = await withTimeout(
+            client.wixEventsV2.queryEvents(
+              {
+                filter: { status: { $in: ["UPCOMING", "STARTED"] } },
+                sort: [{ fieldName: "dateAndTimeSettings.startDate", order: "ASC" }],
+                paging: { limit: 20 },
+              },
+              { fields: ["DETAILS", "REGISTRATION", "URLS"] },
+            ),
+            eventLoadTimeoutMs,
+            "Wix Events did not respond in 10 seconds.",
           );
 
           events = (result.events || [])
@@ -1592,13 +1597,29 @@
           finishLoading();
         } catch (error) {
           console.error("Failed to load Wix Events", error);
-          connectionStatus.textContent = "Wix Events: offline";
-          loadingStatus.textContent = "Copy failed. Showing recovery message.";
+          const isTimeout = error?.message?.includes("did not respond");
+          connectionStatus.textContent = isTimeout ? "Wix Events: timeout" : "Wix Events: offline";
+          loadingStatus.textContent = isTimeout
+            ? "Connection timed out. Showing recovery message."
+            : "Copy failed. Showing recovery message.";
           events = [];
           renderStartEvents();
-          grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">Connection error</p><h2>Could not load events</h2><p>Refresh the page after the Wix Events app is ready.</p></div></article>`;
+          grid.innerHTML = `<article class="xp-card"><div class="event-copy"><p class="file-label">Connection error</p><h2>Could not load events</h2><p>${escapeHtml(error?.message || "Refresh the page after the Wix Events app is ready.")}</p></div></article>`;
           window.setTimeout(finishLoading, 1200);
         }
+      }
+
+      function withTimeout(task, ms, message) {
+        let timeoutId;
+        const timeout = new Promise((_, reject) => {
+          timeoutId = window.setTimeout(() => {
+            reject(new Error(message));
+          }, ms);
+        });
+
+        return Promise.race([task, timeout]).finally(() => {
+          window.clearTimeout(timeoutId);
+        });
       }
 
       function delay(ms) {
